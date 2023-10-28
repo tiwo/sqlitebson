@@ -1,0 +1,41 @@
+name: build
+
+on: 
+    [push, pull_request]
+
+jobs:
+
+    build:
+
+        name: Build on ${{ matrix.os }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                include:
+                    - os: ubuntu-20.04
+                    #- os: windows-latest
+                    #- os: macos-latest
+
+        steps:
+
+            - uses: actions/checkout@v4
+
+            - name: Install libbson-dev and sqlite3-dev
+              if: matrix.os == 'ubuntu-20.04'
+              shell: sh
+              run: |
+                    sudo apt-get update
+                    sudo apt-get -q install -y libbson-dev libsqlite3-dev sqlite3
+
+            - name: compile
+              if: matrix.os == 'ubuntu-20.04'
+              shell: sh
+              run: |
+                    gcc -fPIC -shared -I/usr/include/libbson-1.0 bsonext.c /usr/lib/x86_64-linux-gnu/libbson-1.0.so.0.0.0 -o bson.so
+            
+            - name: test
+              if: matrix.os == 'ubuntu-20.04'
+              shell: sh
+              run: |
+                    sqlite3 :memory: '.load ./bson'
+            
