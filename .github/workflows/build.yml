@@ -1,4 +1,4 @@
-name: build
+name: test
 
 on: 
     [push, pull_request]
@@ -27,15 +27,11 @@ jobs:
                     sudo apt-get update
                     sudo apt-get -q install -y libbson-dev libsqlite3-dev sqlite3
 
-            - name: compile
-              if: matrix.os == 'ubuntu-20.04'
-              shell: sh
-              run: |
-                    gcc -fPIC -shared -I/usr/include/libbson-1.0 bsonext.c /usr/lib/x86_64-linux-gnu/libbson-1.0.so.0.0.0 -o bson.so
-            
             - name: test
               if: matrix.os == 'ubuntu-20.04'
               shell: sh
               run: |
+                    make
                     sqlite3 :memory: '.load ./bson'
+                    make test
             
